@@ -4,9 +4,10 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   console.log("GET /api/teams - Fetching teams");
   try {
-    // Check for prisma connection first
+    // Check for database connection by trying a lightweight operation
     try {
-      await prisma.$queryRaw`SELECT 1`;
+      // Use a non-raw query operation that works with any adapter
+      await prisma.team.count();
       console.log("Database connection test successful");
     } catch (connError) {
       console.error("Database connection test failed:", connError);
