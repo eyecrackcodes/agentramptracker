@@ -169,7 +169,7 @@ export function AgentStatusManager() {
     }
   };
 
-  const changeAgentStatus = async (agentId: string, newStatus: "T" | "P") => {
+  const changeAgentStatus = async (agentId: string, newStatus: "T" | "P" | "A") => {
     try {
       setProcessingAgent(agentId);
       const agent = agents.find((a) => a.id === agentId);
@@ -204,7 +204,7 @@ export function AgentStatusManager() {
       // Show success message
       setSuccessMessage(
         `${agent.firstName} ${agent.lastName} moved to ${
-          newStatus === "P" ? "Performance" : "Training"
+          newStatus === "P" ? "Performance" : newStatus === "A" ? "Archived" : "Training"
         } queue`
       );
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -407,7 +407,7 @@ export function AgentStatusManager() {
 interface AgentListProps {
   agents: AgentWithTeamAndMetrics[];
   title: string;
-  changeStatus: (agentId: string, newStatus: "T" | "P") => Promise<void>;
+  changeStatus: (agentId: string, newStatus: "T" | "P" | "A") => Promise<void>;
   processingAgent: string | null;
   showPromoteAll?: boolean;
 }
