@@ -1,74 +1,66 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs";
+
+// This is a placeholder API route - you can implement authentication 
+// using Supabase Auth later if needed
 
 export async function GET() {
   try {
-    const { userId: clerkId } = auth();
-    if (!clerkId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
+    // For now, we'll just return all agents from our Supabase database
+    // Later you can implement proper authentication
+    const agents = await prisma.agent.findMany({
+      include: {
+        team: true,
+      },
+      orderBy: {
+        firstName: 'asc',
+      },
     });
 
-    if (!user) {
-      return new NextResponse("User not found", { status: 404 });
-    }
-
-    if (user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const users = await prisma.user.findMany({
-      where: { role: "AGENT" },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return NextResponse.json(users);
+    return NextResponse.json(agents);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.error("Error fetching agents:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch agents" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { userId: clerkId } = auth();
-    if (!clerkId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
-    });
-
-    if (!user) {
-      return new NextResponse("User not found", { status: 404 });
-    }
-
-    if (user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
+    // For now, we'll just create a new agent
+    // Later you can implement proper authentication
     const body = await request.json();
-    const { email, team, class: className, startDate } = body;
+    const { firstName, lastName, email, teamId, startDate } = body;
 
-    const newUser = await prisma.user.create({
+    if (!firstName || !lastName || !email || !teamId) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+    
+    const agent = await prisma.agent.create({
       data: {
-        clerkId,
+        firstName,
+        lastName,
         email,
-        team,
-        class: className,
-        startDate: new Date(startDate),
-        role: "AGENT",
+        teamId,
+        startDate: startDate ? new Date(startDate) : new Date(),
+        status: "P", // Default to Performance
+      },
+      include: {
+        team: true,
       },
     });
 
-    return NextResponse.json(newUser);
+    return NextResponse.json(agent);
   } catch (error) {
-    console.error("Error creating user:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.error("Error creating agent:", error);
+    return NextResponse.json(
+      { error: "Failed to create agent" },
+      { status: 500 }
+    );
   }
 }
