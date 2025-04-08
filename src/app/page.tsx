@@ -429,7 +429,6 @@ export default function Home() {
                     valueFormatter={(value) => `${value.toFixed(1)}%`}
                     showLegend={false}
                     yAxisWidth={40}
-                    minHeight={300}
                     showAnimation={true}
                   />
                 </Card>
@@ -440,14 +439,11 @@ export default function Home() {
                     className="mt-6 h-80"
                     data={monthlyTrends}
                     index="month"
-                    categories={["averagePremium"]}
-                    colors={["emerald"]}
-                    valueFormatter={(value) =>
-                      `$${Math.round(value).toLocaleString()}`
-                    }
+                    categories={["avgPremium"]}
+                    colors={["green"]}
+                    valueFormatter={(value) => `$${value.toFixed(0)}`}
                     showLegend={false}
-                    yAxisWidth={60}
-                    minHeight={300}
+                    yAxisWidth={40}
                     showAnimation={true}
                   />
                 </Card>
@@ -459,11 +455,10 @@ export default function Home() {
                     data={monthlyTrends}
                     index="month"
                     categories={["placeRate"]}
-                    colors={["amber"]}
+                    colors={["purple"]}
                     valueFormatter={(value) => `${value.toFixed(1)}%`}
                     showLegend={false}
                     yAxisWidth={40}
-                    minHeight={300}
                     showAnimation={true}
                   />
                 </Card>
@@ -479,7 +474,6 @@ export default function Home() {
                     valueFormatter={(value) => `${value.toFixed(1)}`}
                     showLegend={false}
                     yAxisWidth={40}
-                    minHeight={300}
                     showAnimation={true}
                   />
                 </Card>
@@ -516,8 +510,7 @@ export default function Home() {
                       valueFormatter={(value) => `${(value * 100).toFixed(1)}%`}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -529,14 +522,11 @@ export default function Home() {
                       data={displayedTeams}
                       index="name"
                       categories={["averagePremium"]}
-                      colors={["emerald"]}
-                      valueFormatter={(value) =>
-                        `$${Math.round(value).toLocaleString()}`
-                      }
+                      colors={["green"]}
+                      valueFormatter={(value) => `$${value.toFixed(0)}`}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -548,12 +538,11 @@ export default function Home() {
                       data={displayedTeams}
                       index="name"
                       categories={["averagePlaceRate"]}
-                      colors={["amber"]}
+                      colors={["purple"]}
                       valueFormatter={(value) => `${(value * 100).toFixed(1)}%`}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -565,12 +554,11 @@ export default function Home() {
                       data={displayedTeams}
                       index="name"
                       categories={["averageCapScore"]}
-                      colors={["indigo"]}
-                      valueFormatter={(value) => `${value.toFixed(1)}`}
+                      colors={["orange"]}
+                      valueFormatter={(value) => value.toFixed(0)}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -601,8 +589,7 @@ export default function Home() {
                       valueFormatter={(value) => `${value.toFixed(1)}%`}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -618,14 +605,11 @@ export default function Home() {
                       }))}
                       index="agent"
                       categories={["value"]}
-                      colors={["emerald"]}
-                      valueFormatter={(value) =>
-                        `$${Math.round(value).toLocaleString()}`
-                      }
+                      colors={["green"]}
+                      valueFormatter={(value) => `$${value.toFixed(0)}`}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -641,12 +625,11 @@ export default function Home() {
                       }))}
                       index="agent"
                       categories={["value"]}
-                      colors={["amber"]}
+                      colors={["purple"]}
                       valueFormatter={(value) => `${value.toFixed(1)}%`}
                       layout="vertical"
                       showLegend={false}
-                      yAxisWidth={150}
-                      minHeight={300}
+                      yAxisWidth={40}
                       showAnimation={true}
                     />
                   </Card>
@@ -681,7 +664,6 @@ export default function Home() {
                       index="name"
                       valueFormatter={(value) => `${value} agents`}
                       colors={["emerald", "amber", "red"]}
-                      minHeight={300}
                       showAnimation={true}
                     />
                   </Card>
