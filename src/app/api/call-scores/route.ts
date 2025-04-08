@@ -87,8 +87,8 @@ export async function POST(request: Request) {
     );
 
     // Enable Supabase debug mode to see raw SQL queries
-    const supabase = getSafeSupabaseClient();
-    if (!supabase) {
+    const supabaseClient = getSafeSupabaseClient();
+    if (!supabaseClient) {
       throw new Error("Database connection is not available");
     }
 
@@ -125,8 +125,8 @@ export async function POST(request: Request) {
       );
 
       // Add direct database query to check values
-      const supabase = getDirectSupabaseClient();
-      const { data: dbValues, error: dbError } = await supabase
+      const supabaseDebug = getDirectSupabaseClient();
+      const { data: dbValues, error: dbError } = await supabaseDebug
         .from("call_scores")
         .select("*")
         .order("created_at", { ascending: false })
@@ -166,10 +166,10 @@ export async function POST(request: Request) {
       console.log("Trying direct Supabase insertion");
 
       // Get direct client
-      const supabase = getDirectSupabaseClient();
+      const supabaseFallback = getDirectSupabaseClient();
 
       // Use direct Supabase client
-      const { data, error } = await supabase
+      const { data, error } = await supabaseFallback
         .from("call_scores")
         .insert({
           agent_id,
