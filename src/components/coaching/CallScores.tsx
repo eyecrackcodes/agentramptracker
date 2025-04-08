@@ -655,12 +655,6 @@ export default function CallScores({ agentId }: { agentId: string }) {
               <div className="text-right">
                 <p className="text-lg font-bold">
                   Script Adherence: {getDisplayScore(score)}%
-                  {process.env.NODE_ENV !== 'production' && (
-                    <span className="text-xs text-gray-500">
-                      [sa: {score.script_adherence !== undefined ? score.script_adherence : 'undefined'}, 
-                       cs: {score.closing_score !== undefined ? score.closing_score : 'undefined'}]
-                    </span>
-                  )}
                 </p>
                 <div className="w-32 bg-gray-200 rounded-full h-2.5 mt-1">
                   <div 
