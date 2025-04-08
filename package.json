@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm install @radix-ui/react-accordion @radix-ui/react-tabs @radix-ui/react-popover @radix-ui/react-label lucide-react",
+    "prebuild": "npm install @radix-ui/react-accordion @radix-ui/react-tabs @radix-ui/react-popover @radix-ui/react-label lucide-react autoprefixer postcss tailwindcss",
     "build": "npm install && next build",
     "start": "next start",
     "lint": "next lint",
@@ -30,12 +30,14 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@supabase/supabase-js": "^2.49.4",
     "@tremor/react": "^3.14.1",
+    "autoprefixer": "^10.4.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.487.0",
     "next": "14.2.25",
+    "postcss": "^8.4.35",
     "react": "^18.2.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
@@ -50,8 +52,6 @@
     "@types/node": "^20.11.28",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
-    "autoprefixer": "^10.4.18",
-    "postcss": "^8.4.35",
     "prisma": "^6.5.0",
     "ts-node": "^10.9.2"
   }
