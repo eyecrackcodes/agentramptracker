@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTeamAgent } from "@/context/TeamAgentContext";
 import { Agent, Team } from "@prisma/client";
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns";
 
 export function QuickMetricsEntry() {
   const { selectedTeam, selectedAgent, setSelectedTeam, setSelectedAgent } =
@@ -16,6 +17,7 @@ export function QuickMetricsEntry() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);
   const [loadingAgents, setLoadingAgents] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [formData, setFormData] = useState({
     closeRate: "",
     averagePremium: "",
@@ -27,10 +29,19 @@ export function QuickMetricsEntry() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get current month and week
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentWeek = Math.ceil(now.getDate() / 7);
+  // Calculate week dates
+  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 }); // Start on Monday
+  const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 }); // End on Sunday
+  const currentMonth = selectedDate.getMonth() + 1;
+  const currentWeek = Math.ceil(selectedDate.getDate() / 7);
+
+  const handlePreviousWeek = () => {
+    setSelectedDate(subWeeks(selectedDate, 1));
+  };
+
+  const handleNextWeek = () => {
+    setSelectedDate(addWeeks(selectedDate, 1));
+  };
 
   useEffect(() => {
     fetchTeams();
@@ -138,7 +149,33 @@ export function QuickMetricsEntry() {
   return (
     <Card className="mt-4">
       <Title>Quick Metrics Entry</Title>
-      <Text className="mb-4">Quickly add metrics for your agents</Text>
+      <Text className="mb-4">Add weekly performance metrics for your agents</Text>
+
+      <div className="flex items-center justify-between mb-6 bg-gray-50 p-4 rounded-lg">
+        <Button
+          variant="outline"
+          onClick={handlePreviousWeek}
+          className="text-gray-600"
+        >
+          Previous Week
+        </Button>
+        <div className="text-center">
+          <div className="font-semibold text-lg text-gray-800">
+            Week {currentWeek} - {format(weekStart, "MMM yyyy")}
+          </div>
+          <div className="text-sm text-gray-600">
+            {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleNextWeek}
+          className="text-gray-600"
+          disabled={weekEnd > new Date()}
+        >
+          Next Week
+        </Button>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
@@ -207,10 +244,8 @@ export function QuickMetricsEntry() {
             />
           </div>
 
-          <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-            <Label htmlFor="averagePremium" className="text-sm font-medium">
-              Avg Premium ($)
-            </Label>
+          <div>
+            <Label htmlFor="averagePremium">Avg Premium ($)</Label>
             <Input
               id="averagePremium"
               type="number"
@@ -223,7 +258,7 @@ export function QuickMetricsEntry() {
                   averagePremium: e.target.value,
                 })
               }
-              className="w-full"
+              className="mt-1"
               required
             />
           </div>
@@ -286,7 +321,9 @@ export function QuickMetricsEntry() {
 
       {success && (
         <Alert className="mt-4 bg-green-50 border-green-200 text-green-800">
-          <AlertDescription>Metrics saved successfully!</AlertDescription>
+          <AlertDescription>
+            Metrics saved successfully for week {currentWeek} of {format(selectedDate, "MMMM yyyy")}!
+          </AlertDescription>
         </Alert>
       )}
     </Card>

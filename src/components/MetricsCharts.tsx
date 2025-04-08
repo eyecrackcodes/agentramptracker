@@ -1,7 +1,20 @@
 import { Card, Title, BarChart, DonutChart } from "@tremor/react";
 import { useTeamAgent } from "../context/TeamAgentContext";
 import { useEffect, useState } from "react";
-import { Metric } from "@prisma/client";
+
+interface Metric {
+  id: string;
+  agentId: string;
+  month: number;
+  week: number;
+  closeRate: number;
+  averagePremium: number;
+  placeRate: number;
+  capScore: number;
+  leadsPerDay: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export function MetricsCharts() {
   const { selectedAgent } = useTeamAgent();
@@ -62,10 +75,10 @@ export function MetricsCharts() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-      <Card>
+      <Card className="min-h-[400px]">
         <Title>Close Rate Trend</Title>
         <BarChart
-          className="mt-6"
+          className="mt-6 h-[300px]"
           data={closeRateData}
           index="month"
           categories={["Close Rate"]}
@@ -75,10 +88,10 @@ export function MetricsCharts() {
         />
       </Card>
 
-      <Card>
+      <Card className="min-h-[400px]">
         <Title>Average Premium Trend</Title>
         <BarChart
-          className="mt-6"
+          className="mt-6 h-[300px]"
           data={premiumData}
           index="month"
           categories={["Average Premium"]}
@@ -88,10 +101,10 @@ export function MetricsCharts() {
         />
       </Card>
 
-      <Card>
+      <Card className="min-h-[400px]">
         <Title>Place Rate vs Close Rate</Title>
         <DonutChart
-          className="mt-6"
+          className="mt-6 h-[300px]"
           data={[
             {
               name: "Place Rate",
@@ -113,10 +126,10 @@ export function MetricsCharts() {
         />
       </Card>
 
-      <Card>
+      <Card className="min-h-[400px]">
         <Title>Leads per Day Trend</Title>
         <BarChart
-          className="mt-6"
+          className="mt-6 h-[300px]"
           data={metrics.map((metric) => ({
             month: `${metric.month} Week ${metric.week}`,
             "Leads per Day": metric.leadsPerDay,

@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
   relationMode = "foreignKeys"
 }
@@ -30,6 +30,9 @@ model Agent {
   tenure          Float?   // Tenure in months
   targetLeadsPerDay Int    @default(8)
   metrics         Metric[]
+  coachingSessions CoachingSession[]
+  callScores      CallScore[]
+  developmentGoals DevelopmentGoal[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -38,6 +41,7 @@ model Metric {
   id              String   @id @default(cuid())
   agentId         String
   agent           Agent    @relation(fields: [agentId], references: [id])
+  year            Int
   month           Int
   week            Int
   closeRate       Float
@@ -48,7 +52,52 @@ model Metric {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@unique([agentId, month, week])
+  @@unique([agentId, year, month, week])
+}
+
+model CoachingSession {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agent_id    String   @db.Uuid
+  date        DateTime @db.Timestamptz
+  type        String   @db.VarChar(50)
+  notes       String   @db.Text
+  action_items String? @db.Text
+  created_at  DateTime @default(now()) @db.Timestamptz
+  updated_at  DateTime @default(now()) @db.Timestamptz
+  agent       Agent    @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@map("coaching_sessions")
+}
+
+model CallScore {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agent_id         String   @db.Uuid
+  date             DateTime @db.Timestamptz
+  call_type        String   @db.VarChar(50)
+  customer_service Int
+  sales_approach   Int
+  call_control     Int
+  notes            String?  @db.Text
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @db.Timestamptz
+  agent            Agent    @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@map("call_scores")
+}
+
+model DevelopmentGoal {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agent_id    String   @db.Uuid
+  goal_type   String   @db.Text
+  description String   @db.Text
+  target_date DateTime @db.Timestamp()
+  status      String   @db.Text
+  progress    String?  @db.Text
+  created_at  DateTime @default(now()) @db.Timestamp()
+  updated_at  DateTime @default(now()) @db.Timestamp()
+  agent       Agent    @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@map("development_goals")
 }
 
 // Legacy models - keeping for reference but not using in new code

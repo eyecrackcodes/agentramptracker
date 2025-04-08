@@ -4,19 +4,30 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   console.log("GET /api/teams - Fetching teams");
   try {
-    // Use our Supabase adapter which we've set up in prisma.ts
     const teams = await prisma.team.findMany({
       include: {
         agents: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            startDate: true,
-          },
-        },
-      },
+          include: {
+            call_scores: {
+              orderBy: {
+                call_date: 'desc'
+              },
+              take: 1
+            },
+            coaching_sessions: {
+              orderBy: {
+                session_date: 'desc'
+              },
+              take: 1
+            },
+            development_goals: {
+              where: {
+                status: 'IN_PROGRESS'
+              }
+            }
+          }
+        }
+      }
     });
     console.log(`GET /api/teams - Successfully fetched ${teams.length} teams`);
     return NextResponse.json(teams);

@@ -20,10 +20,10 @@ import {
   Bold,
 } from "@tremor/react";
 import { ChevronUp, ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
-import { Metric as MetricType } from "@prisma/client";
 
-interface AgentMetric {
+interface Metric {
   id: string;
+  agentId: string;
   month: number;
   week: number;
   closeRate: number;
@@ -31,11 +31,13 @@ interface AgentMetric {
   placeRate: number;
   capScore: number;
   leadsPerDay: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface MetricsVisualizationsProps {
   agentId: string;
-  metrics: MetricType[];
+  metrics: Metric[];
   agentName?: string;
 }
 
@@ -51,7 +53,7 @@ export function MetricsVisualizations({
   });
 
   // Calculate performance changes
-  const getChange = (metrics: MetricType[], key: keyof MetricType): number => {
+  const getChange = (metrics: Metric[], key: keyof Metric): number => {
     if (metrics.length < 2) return 0;
     const latest = metrics[metrics.length - 1][key] as number;
     const previous = metrics[metrics.length - 2][key] as number;
@@ -80,8 +82,8 @@ export function MetricsVisualizations({
 
   // Calculate averages
   const calculateAverage = (
-    arr: MetricType[],
-    key: keyof MetricType
+    arr: Metric[],
+    key: keyof Metric
   ): number => {
     if (arr.length === 0) return 0;
     return (
@@ -205,10 +207,10 @@ export function MetricsVisualizations({
         <TabPanels>
           <TabPanel>
             <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
-              <Card>
+              <Card className="min-h-[400px]">
                 <Title>Close Rate History</Title>
                 <LineChart
-                  className="mt-6 h-72"
+                  className="mt-6 h-[300px]"
                   data={timeSeriesData}
                   index="month"
                   categories={["closeRate"]}
@@ -220,10 +222,10 @@ export function MetricsVisualizations({
                 />
               </Card>
 
-              <Card>
+              <Card className="min-h-[400px]">
                 <Title>Premium History</Title>
                 <LineChart
-                  className="mt-6 h-72"
+                  className="mt-6 h-[300px]"
                   data={timeSeriesData}
                   index="month"
                   categories={["averagePremium"]}
@@ -235,10 +237,10 @@ export function MetricsVisualizations({
                 />
               </Card>
 
-              <Card>
+              <Card className="min-h-[400px]">
                 <Title>Place Rate History</Title>
                 <LineChart
-                  className="mt-6 h-72"
+                  className="mt-6 h-[300px]"
                   data={timeSeriesData}
                   index="month"
                   categories={["placeRate"]}
@@ -250,10 +252,10 @@ export function MetricsVisualizations({
                 />
               </Card>
 
-              <Card>
+              <Card className="min-h-[400px]">
                 <Title>Leads Per Day History</Title>
                 <BarChart
-                  className="mt-6 h-72"
+                  className="mt-6 h-[300px]"
                   data={timeSeriesData}
                   index="month"
                   categories={["leadsPerDay"]}

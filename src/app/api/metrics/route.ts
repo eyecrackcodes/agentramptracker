@@ -59,6 +59,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       agentId,
+      year,
       month,
       week,
       closeRate,
@@ -69,17 +70,18 @@ export async function POST(request: Request) {
     } = body;
 
     // Validate required fields
-    if (!agentId || month === undefined || week === undefined) {
+    if (!agentId || year === undefined || month === undefined || week === undefined) {
       return NextResponse.json(
-        { error: "Agent ID, month, and week are required" },
+        { error: "Agent ID, year, month, and week are required" },
         { status: 400 }
       );
     }
 
-    // Check if metric already exists for this agent, month, and week
+    // Check if metric already exists for this agent, year, month, and week
     const existingMetric = await prisma.metric.findFirst({
       where: {
         agentId,
+        year,
         month,
         week,
       },
@@ -105,6 +107,7 @@ export async function POST(request: Request) {
     const metric = await prisma.metric.create({
       data: {
         agentId,
+        year,
         month,
         week,
         closeRate,

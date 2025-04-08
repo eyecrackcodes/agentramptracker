@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTeamAgent } from "../context/TeamAgentContext";
-import { PlusCircle, Users, BarChart } from "lucide-react";
+import { PlusCircle, Users, BarChart, Clipboard, UserCog } from "lucide-react";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -31,6 +31,16 @@ export default function Navigation() {
                 }`}
               >
                 <BarChart className="h-4 w-4 mr-1" /> Dashboard
+              </Link>
+              <Link
+                href="/manager-dashboard"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  isActive("/manager-dashboard")
+                    ? "border-indigo-500 text-gray-900"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                }`}
+              >
+                <UserCog className="h-4 w-4 mr-1" /> Manager View
               </Link>
               <Link
                 href="/metrics"
@@ -61,6 +71,16 @@ export default function Navigation() {
                 }`}
               >
                 <Users className="h-4 w-4 mr-1" /> Agent Status
+              </Link>
+              <Link
+                href="/coaching"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  isActive("/coaching")
+                    ? "border-indigo-500 text-gray-900"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                }`}
+              >
+                <Clipboard className="h-4 w-4 mr-1" /> Coaching
               </Link>
               <Link
                 href="/quick-add"

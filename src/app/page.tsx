@@ -418,10 +418,10 @@ export default function Home() {
           <TabPanel className="w-full">
             <div className="w-full">
               <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
-                <Card>
+                <Card className="min-h-[400px]">
                   <Title>Monthly Close Rate Trend</Title>
                   <LineChart
-                    className="mt-6 h-80"
+                    className="mt-6 h-[300px]"
                     data={monthlyTrends}
                     index="month"
                     categories={["closeRate"]}
@@ -433,10 +433,10 @@ export default function Home() {
                   />
                 </Card>
 
-                <Card>
+                <Card className="min-h-[400px]">
                   <Title>Monthly Premium Trend</Title>
                   <AreaChart
-                    className="mt-6 h-80"
+                    className="mt-6 h-[300px]"
                     data={monthlyTrends}
                     index="month"
                     categories={["avgPremium"]}
@@ -448,10 +448,10 @@ export default function Home() {
                   />
                 </Card>
 
-                <Card>
+                <Card className="min-h-[400px]">
                   <Title>Monthly Place Rate Trend</Title>
                   <LineChart
-                    className="mt-6 h-80"
+                    className="mt-6 h-[300px]"
                     data={monthlyTrends}
                     index="month"
                     categories={["placeRate"]}
@@ -463,10 +463,10 @@ export default function Home() {
                   />
                 </Card>
 
-                <Card>
+                <Card className="min-h-[400px]">
                   <Title>Monthly Leads Per Day Trend</Title>
                   <BarChart
-                    className="mt-6 h-80"
+                    className="mt-6 h-[300px]"
                     data={monthlyTrends}
                     index="month"
                     categories={["leadsPerDay"]}
