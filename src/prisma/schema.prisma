@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  clerkId       String    @unique
+  email         String    @unique
+  role          UserRole  @default(AGENT)
+  team          String?
+  class         String?
+  startDate     DateTime
+  metrics       AgentRampMetric[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model AgentRampMetric {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  monthNumber     Int
+  weekNumber      Int
+  closeRate       Float
+  avgPremium      Float
+  placeRate       Float
+  capScore        Float?
+  leadsTakenPerDay Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, monthNumber, weekNumber])
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+} 

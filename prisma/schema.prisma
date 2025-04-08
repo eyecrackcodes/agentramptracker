@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  agents      Agent[]
+}
+
+model Agent {
+  id              String   @id @default(cuid())
+  firstName       String
+  lastName        String
+  email           String   @unique
+  teamId          String
+  team            Team     @relation(fields: [teamId], references: [id])
+  startDate       DateTime
+  status          String?  @default("P") // "P" for Performance queue, "T" for Training queue, "A" for Archived
+  tenure          Float?   // Tenure in months
+  targetLeadsPerDay Int    @default(8)
+  metrics         Metric[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Metric {
+  id              String   @id @default(cuid())
+  agentId         String
+  agent           Agent    @relation(fields: [agentId], references: [id])
+  month           Int
+  week            Int
+  closeRate       Float
+  averagePremium  Float
+  placeRate       Float
+  capScore        Float
+  leadsPerDay     Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([agentId, month, week])
+}
+
+// Legacy models - keeping for reference but not using in new code
+// model User {
+//   id        String            @id @default(cuid())
+//   clerkId   String            @unique
+//   email     String            @unique
+//   role      UserRole          @default(AGENT)
+//   team      String?
+//   class     String?
+//   startDate DateTime
+//   createdAt DateTime          @default(now())
+//   updatedAt DateTime          @updatedAt
+//   metrics   AgentRampMetric[]
+// }
+
+// model AgentRampMetric {
+//   id               String   @id @default(cuid())
+//   userId           String
+//   monthNumber      Int
+//   weekNumber       Int
+//   closeRate        Float
+//   avgPremium       Float
+//   placeRate        Float
+//   capScore         Float?
+//   leadsTakenPerDay Float
+//   createdAt        DateTime @default(now())
+//   updatedAt        DateTime @updatedAt
+//   user             User     @relation(fields: [userId], references: [id])
+
+//   @@unique([userId, monthNumber, weekNumber])
+// }
+
+// enum UserRole {
+//   ADMIN
+//   AGENT
+// }
