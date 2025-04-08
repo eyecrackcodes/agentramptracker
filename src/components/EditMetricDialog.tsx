@@ -26,8 +26,8 @@ export function EditMetricDialog({
 }: EditMetricDialogProps) {
   const [formData, setFormData] = useState<Partial<Metric>>(
     metric || {
-      month: "",
-      week: "",
+      month: 0,
+      week: 0,
       closeRate: 0,
       averagePremium: 0,
       placeRate: 0,
@@ -67,9 +67,10 @@ export function EditMetricDialog({
               </Label>
               <Input
                 id="month"
+                type="number"
                 value={formData.month}
                 onChange={(e) =>
-                  setFormData({ ...formData, month: e.target.value })
+                  setFormData({ ...formData, month: parseInt(e.target.value) || 0 })
                 }
                 className="col-span-3"
               />
@@ -80,9 +81,10 @@ export function EditMetricDialog({
               </Label>
               <Input
                 id="week"
+                type="number"
                 value={formData.week}
                 onChange={(e) =>
-                  setFormData({ ...formData, week: e.target.value })
+                  setFormData({ ...formData, week: parseInt(e.target.value) || 0 })
                 }
                 className="col-span-3"
               />
