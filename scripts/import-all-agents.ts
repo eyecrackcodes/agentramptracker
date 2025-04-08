@@ -1,8 +1,23 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+// Define interface for agent data
+interface AgentData {
+  tenure: number;
+  status: string;
+  site: string;
+  manager: string;
+  rank: number | string | null;
+  name: string;
+  capScore: number;
+  closeRate: number;
+  avgPremium: number;
+  placeRate: number;
+  leadsPerDay: number;
+}
+
 // CAP score data for 03/10/2025 - complete dataset
-const AGENT_DATA = [
+const AGENT_DATA: AgentData[] = [
   {
     tenure: 8.4,
     status: "P",
@@ -1098,7 +1113,7 @@ const AGENT_DATA = [
 ];
 
 // Function to find or create a team
-async function findOrCreateTeam(managerName, site) {
+async function findOrCreateTeam(managerName: string, site: string) {
   // Look up team by manager name
   let team = await prisma.team.findFirst({
     where: {
@@ -1121,7 +1136,7 @@ async function findOrCreateTeam(managerName, site) {
 }
 
 // Process an agent and add to database
-async function processAgent(agentData) {
+async function processAgent(agentData: AgentData) {
   try {
     // Find or create the team
     const team = await findOrCreateTeam(agentData.manager, agentData.site);
