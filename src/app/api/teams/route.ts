@@ -6,8 +6,8 @@ export async function GET() {
   try {
     // Check for database connection by trying a lightweight operation
     try {
-      // Use a non-raw query operation that works with any adapter
-      await prisma.team.count();
+      // Use a lightweight findMany operation that works with the Supabase adapter
+      await prisma.team.findMany({ take: 1 });
       console.log("Database connection test successful");
     } catch (connError) {
       console.error("Database connection test failed:", connError);
