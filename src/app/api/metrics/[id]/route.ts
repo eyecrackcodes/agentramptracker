@@ -45,7 +45,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.metric.delete({
+    await prisma.metric.deleteMany({
       where: { id: params.id },
     });
 
