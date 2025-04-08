@@ -54,10 +54,10 @@ export function AdminDashboard() {
   });
 
   const teams = Array.from(
-    new Set(users.map((user) => user.team).filter(Boolean))
+    new Set(users.map((user) => user.team).filter((team): team is string => Boolean(team)))
   );
   const classes = Array.from(
-    new Set(users.map((user) => user.class).filter(Boolean))
+    new Set(users.map((user) => user.class).filter((cls): cls is string => Boolean(cls)))
   );
 
   return (
