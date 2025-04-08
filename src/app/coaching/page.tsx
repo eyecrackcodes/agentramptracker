@@ -4,6 +4,22 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 
+// Define Agent interface based on Prisma schema
+interface Agent {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  teamId: string;
+  teamName?: string;
+  startDate: Date;
+  status?: string;
+  team?: {
+    id: string;
+    name: string;
+  };
+}
+
 export default async function CoachingDashboard() {
   const agents = await getAgents();
 
@@ -17,14 +33,14 @@ export default async function CoachingDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {agents.map((agent) => (
+        {agents.map((agent: Agent) => (
           <Card key={agent.id} className="p-4">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">
                   {agent.firstName} {agent.lastName}
                 </h3>
-                <p className="text-sm text-gray-500">{agent.teamName}</p>
+                <p className="text-sm text-gray-500">{agent.team?.name || agent.teamName}</p>
               </div>
               <Users className="h-8 w-8 text-gray-400" />
             </div>
