@@ -34,7 +34,7 @@ export async function GET() {
         `GET /api/teams - Successfully fetched ${
           teams.length
         } teams with ${teams.reduce(
-          (acc, team) => acc + team.agents.length,
+          (acc: number, team: any) => acc + (team.agents?.length || 0),
           0
         )} agents`
       );
