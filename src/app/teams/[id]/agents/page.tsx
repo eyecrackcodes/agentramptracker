@@ -16,8 +16,8 @@ export default function TeamAgentsPage({ params }: { params: { id: string } }) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAgent, setSelectedAgent] = useState<AgentWithTeam | null>(
-    null
+  const [selectedAgent, setSelectedAgent] = useState<AgentWithTeam | undefined>(
+    undefined
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -76,7 +76,7 @@ export default function TeamAgentsPage({ params }: { params: { id: string } }) {
   };
 
   const handleAddAgent = () => {
-    setSelectedAgent(null);
+    setSelectedAgent(undefined);
     setIsDialogOpen(true);
   };
 
@@ -112,7 +112,7 @@ export default function TeamAgentsPage({ params }: { params: { id: string } }) {
 
       fetchTeamAndAgents(); // Refresh the list
       setIsDialogOpen(false);
-      setSelectedAgent(null);
+      setSelectedAgent(undefined);
     } catch (err) {
       console.error("Error in handleSubmit:", err);
       setError(err instanceof Error ? err.message : "Failed to save agent");
