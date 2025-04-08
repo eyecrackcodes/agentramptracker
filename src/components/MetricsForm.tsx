@@ -422,13 +422,13 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                 </div>
                 <Input
                   type="number"
-                  step="1"
+                  step="0.01"
                   min="500"
                   max="5000"
                   id="averagePremium"
                   value={formData.averagePremium}
                   onChange={(e) => {
-                    const newValue = Math.round(parseFloat(e.target.value));
+                    const newValue = parseFloat(e.target.value);
                     setFormData({
                       ...formData,
                       averagePremium: isNaN(newValue) ? 0 : newValue,
