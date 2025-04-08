@@ -19,13 +19,24 @@ interface MetricsFormProps {
 }
 
 interface FormData {
-  month: number;
+  year: number;
+  month: number; // Now represents tenure month, not calendar month
   week: number;
   closeRate: number;
   averagePremium: number;
   placeRate: number;
   capScore: number;
   leadsPerDay: number;
+}
+
+interface WeekInfo {
+  year: number;
+  week: number;
+  month: number;
+  canSubmit: boolean;
+  weekEnding: string;
+  startDate: Date | undefined;
+  currentTenureMonth: number | undefined;
 }
 
 function getWeekNumber(date: Date): number {
@@ -39,12 +50,15 @@ function getWeekNumber(date: Date): number {
   return Math.ceil((dayOfMonth + dayOfWeek) / 7);
 }
 
-function getCurrentWeekAndMonth(): {
-  week: number;
-  month: number;
-  canSubmit: boolean;
-  weekEnding: string;
-} {
+function getMonthsSinceStart(startDate: Date): number {
+  const now = new Date();
+  const start = new Date(startDate);
+  const months = (now.getFullYear() - start.getFullYear()) * 12 + 
+                (now.getMonth() - start.getMonth()) + 1;
+  return months;
+}
+
+function getCurrentWeekAndMonth(startDate?: string): WeekInfo {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 (Sunday) to 6 (Saturday)
 
@@ -53,7 +67,15 @@ function getCurrentWeekAndMonth(): {
 
   // Get the current week and month
   const currentWeek = getWeekNumber(now);
-  const currentMonth = now.getMonth() + 1; // 1-12
+  const currentYear = now.getFullYear();
+  
+  // If we have a start date, calculate tenure month
+  let currentTenureMonth: number | undefined;
+  let startDateObj: Date | undefined;
+  if (startDate) {
+    startDateObj = new Date(startDate);
+    currentTenureMonth = getMonthsSinceStart(startDateObj);
+  }
 
   // Calculate the date the week ends (Friday)
   const daysUntilFriday = dayOfWeek <= 5 ? 5 - dayOfWeek : 5 + 7 - dayOfWeek;
@@ -61,16 +83,20 @@ function getCurrentWeekAndMonth(): {
   weekEnding.setDate(now.getDate() + daysUntilFriday);
 
   return {
+    year: currentYear,
     week: currentWeek,
-    month: currentMonth,
+    month: currentTenureMonth || 1,
     canSubmit: isAfterFriday,
     weekEnding: weekEnding.toLocaleDateString(),
+    startDate: startDateObj,
+    currentTenureMonth
   };
 }
 
-const { week, month, canSubmit, weekEnding } = getCurrentWeekAndMonth();
+const { year, week, month, canSubmit, weekEnding, startDate, currentTenureMonth } = getCurrentWeekAndMonth();
 
 const initialFormData: FormData = {
+  year,
   month,
   week,
   closeRate: 0,
@@ -105,11 +131,14 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [currentWeekInfo, setCurrentWeekInfo] = useState({
+  const [currentWeekInfo, setCurrentWeekInfo] = useState<WeekInfo>({
+    year,
     week,
     month,
     canSubmit,
     weekEnding,
+    startDate: undefined,
+    currentTenureMonth: undefined
   });
 
   const applyPreset = (field: keyof FormData, value: number) => {
@@ -120,13 +149,37 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
   };
 
   useEffect(() => {
-    // Update week info when component mounts or date changes
-    const interval = setInterval(() => {
-      setCurrentWeekInfo(getCurrentWeekAndMonth());
-    }, 60000); // Check every minute
+    // Fetch agent details to get start date
+    const fetchAgentDetails = async () => {
+      try {
+        const response = await fetch(`/api/agents/${agentId}`);
+        if (!response.ok) throw new Error('Failed to fetch agent details');
+        const agent = await response.json();
+        
+        // Update week info with agent's start date
+        const newWeekInfo = getCurrentWeekAndMonth(agent.startDate);
+        setCurrentWeekInfo({
+          year: newWeekInfo.year,
+          week: newWeekInfo.week,
+          month: newWeekInfo.month,
+          canSubmit: newWeekInfo.canSubmit,
+          weekEnding: newWeekInfo.weekEnding,
+          startDate: newWeekInfo.startDate,
+          currentTenureMonth: newWeekInfo.currentTenureMonth
+        });
+        
+        // Update form data with the correct tenure month
+        setFormData(prev => ({
+          ...prev,
+          month: newWeekInfo.currentTenureMonth || 1
+        }));
+      } catch (err) {
+        console.error('Error fetching agent details:', err);
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, []);
+    fetchAgentDetails();
+  }, [agentId]);
 
   // Calculate CAP score whenever close rate, premium, or place rate changes
   useEffect(() => {
@@ -210,10 +263,10 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label
-                  htmlFor="month"
+                  htmlFor="year"
                   className="text-sm font-medium flex items-center"
                 >
-                  Month (1-12)
+                  Year
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
@@ -221,21 +274,62 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
-                          Enter the calendar month (1 = January, 12 = December)
+                          Enter the year for historical data entry
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </Label>
                 <span className="text-xs text-[hsl(var(--muted-foreground))]">
-                  Current: {currentWeekInfo.month}
+                  Current: {currentWeekInfo.year}
+                </span>
+              </div>
+              <Input
+                id="year"
+                type="number"
+                min="2020"
+                max="2100"
+                value={formData.year}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    year: parseInt(e.target.value) || currentWeekInfo.year,
+                  })
+                }
+                className="w-full"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="month"
+                  className="text-sm font-medium flex items-center"
+                >
+                  Month on Phones
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon className="h-4 w-4 ml-1 text-[hsl(var(--muted-foreground))]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Month number since agent started ({currentWeekInfo.startDate?.toLocaleDateString()})
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <span className="text-xs text-[hsl(var(--muted-foreground))]">
+                  Current: Month {currentWeekInfo.currentTenureMonth}
                 </span>
               </div>
               <Input
                 id="month"
                 type="number"
                 min="1"
-                max="12"
+                max="48"
                 value={formData.month}
                 onChange={(e) =>
                   setFormData({
