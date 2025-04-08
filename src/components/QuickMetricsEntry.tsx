@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTeamAgent } from "@/context/TeamAgentContext";
-import { Teams, Agent, Team } from "@prisma/client";
+import { Agent, Team } from "@prisma/client";
 
 export function QuickMetricsEntry() {
   const { selectedTeam, selectedAgent, setSelectedTeam, setSelectedAgent } =
@@ -22,7 +22,7 @@ export function QuickMetricsEntry() {
     placeRate: "",
     leadsPerDay: "",
   });
-  const [capScore, setCapScore] = useState(0);
+  const [capScore, setCapScore] = useState<string>("0");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export function QuickMetricsEntry() {
     const placeRateVal = parseFloat(formData.placeRate) / 100 || 0;
 
     const calculatedCapScore = closeRateVal * premiumVal * placeRateVal;
-    setCapScore(Math.round(calculatedCapScore));
+    setCapScore(Math.round(calculatedCapScore).toString());
   }, [formData.closeRate, formData.averagePremium, formData.placeRate]);
 
   const fetchTeams = async () => {
@@ -67,10 +67,10 @@ export function QuickMetricsEntry() {
     }
   };
 
-  const fetchAgents = async (teamId: string) => {
+  const fetchAgents = async (team: Team) => {
     try {
       setLoadingAgents(true);
-      const response = await fetch(`/api/agents?teamId=${teamId}`);
+      const response = await fetch(`/api/agents?teamId=${team.id}`);
       if (!response.ok) throw new Error("Failed to fetch agents");
       const data = await response.json();
       setAgents(data);
@@ -100,13 +100,13 @@ export function QuickMetricsEntry() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          agentId: selectedAgent,
+          agentId: selectedAgent.id,
           month: currentMonth,
           week: currentWeek,
           closeRate: parseFloat(formData.closeRate) / 100, // Convert to decimal
           averagePremium: parseFloat(formData.averagePremium),
           placeRate: parseFloat(formData.placeRate) / 100, // Convert to decimal
-          capScore: capScore,
+          capScore: parseInt(capScore),
           leadsPerDay: parseFloat(formData.leadsPerDay),
         }),
       });
@@ -146,8 +146,11 @@ export function QuickMetricsEntry() {
           <select
             id="team"
             className="w-full rounded-md border border-gray-300 p-2 mt-1"
-            value={selectedTeam || ""}
-            onChange={(e) => setSelectedTeam(e.target.value)}
+            value={selectedTeam?.id || ""}
+            onChange={(e) => {
+              const team = teams.find(t => t.id === e.target.value);
+              setSelectedTeam(team || null);
+            }}
             disabled={loadingTeams}
           >
             <option value="">Select a team</option>
@@ -164,8 +167,11 @@ export function QuickMetricsEntry() {
           <select
             id="agent"
             className="w-full rounded-md border border-gray-300 p-2 mt-1"
-            value={selectedAgent || ""}
-            onChange={(e) => setSelectedAgent(e.target.value)}
+            value={selectedAgent?.id || ""}
+            onChange={(e) => {
+              const agent = agents.find(a => a.id === e.target.value);
+              setSelectedAgent(agent || null);
+            }}
             disabled={!selectedTeam || loadingAgents}
           >
             <option value="">Select an agent</option>
@@ -214,7 +220,7 @@ export function QuickMetricsEntry() {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  averagePremium: Math.round(parseFloat(e.target.value) || 0),
+                  averagePremium: e.target.value,
                 })
               }
               className="w-full"
