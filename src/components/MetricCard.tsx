@@ -49,8 +49,7 @@ export function MetricCard({ metric, target }: MetricCardProps) {
         <div>
           <Text>Close Rate</Text>
           <ProgressBar
-            value={metric.closeRate}
-            maxValue={target.closeRate * 1.5}
+            value={(metric.closeRate / target.closeRate) * 100}
             color={getStatusColor(closeRateStatus)}
             className="mt-2"
           />
@@ -63,8 +62,7 @@ export function MetricCard({ metric, target }: MetricCardProps) {
         <div>
           <Text>Average Premium</Text>
           <ProgressBar
-            value={metric.avgPremium}
-            maxValue={target.avgPremium * 1.5}
+            value={(metric.avgPremium / target.avgPremium) * 100}
             color={getStatusColor(avgPremiumStatus)}
             className="mt-2"
           />
@@ -77,8 +75,7 @@ export function MetricCard({ metric, target }: MetricCardProps) {
         <div>
           <Text>Place Rate</Text>
           <ProgressBar
-            value={metric.placeRate}
-            maxValue={target.placeRate * 1.5}
+            value={(metric.placeRate / target.placeRate) * 100}
             color={getStatusColor(placeRateStatus)}
             className="mt-2"
           />
@@ -92,8 +89,7 @@ export function MetricCard({ metric, target }: MetricCardProps) {
           <div>
             <Text>CAP Score</Text>
             <ProgressBar
-              value={metric.capScore || 0}
-              maxValue={target.capScore * 1.5}
+              value={((metric.capScore || 0) / target.capScore) * 100}
               color={getStatusColor(capScoreStatus!)}
               className="mt-2"
             />
@@ -106,8 +102,7 @@ export function MetricCard({ metric, target }: MetricCardProps) {
         <div>
           <Text>Leads Taken Per Day</Text>
           <ProgressBar
-            value={metric.leadsTakenPerDay}
-            maxValue={12}
+            value={(metric.leadsTakenPerDay / 8) * 100}
             color={getStatusColor(getMetricStatus(metric.leadsTakenPerDay, 8))}
             className="mt-2"
           />
