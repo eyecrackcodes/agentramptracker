@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-// Create a single PrismaClient instance and reuse it
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   console.log("GET /api/teams - Fetching teams");
   try {
+    // Use our Supabase adapter which we've set up in prisma.ts
     const teams = await prisma.team.findMany({
       include: {
         agents: {

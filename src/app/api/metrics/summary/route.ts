@@ -1,7 +1,41 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { logError, formatApiError } from "@/utils/error-handler";
-import { cache } from "@/utils/cache";
+
+interface MetricData {
+  id: string;
+  month: number;
+  week: number;
+  close_rate: number;
+  average_premium: number;
+  place_rate: number;
+  cap_score: number;
+  leads_per_day: number;
+  agents?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    team_id: string;
+    status: string;
+  };
+}
+
+interface FormattedMetric {
+  id: string;
+  month: number;
+  week: number;
+  closeRate: number;
+  averagePremium: number;
+  placeRate: number;
+  capScore: number;
+  leadsPerDay: number;
+  agent: {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    teamId?: string;
+    status?: string;
+  };
+}
 
 export async function GET(request: Request) {
   try {
@@ -9,159 +43,112 @@ export async function GET(request: Request) {
     const teamId = searchParams.get("teamId");
     const includeArchived = searchParams.get("includeArchived") === "true";
 
-    // Generate a cache key based on the request parameters
-    const cacheKey = `metrics_summary_${teamId || "all"}_${
-      includeArchived ? "with_archived" : "active_only"
-    }`;
+    console.log("Fetching metrics summary with teamId:", teamId, "includeArchived:", includeArchived);
 
-    // Try to get from cache or fetch fresh data
-    return NextResponse.json(
-      await cache.getOrSet(
-        cacheKey,
-        async () => {
-          // Get all metrics for active agents (exclude archived by default)
-          const metrics = await prisma.metric.findMany({
-            where: {
-              agent: {
-                teamId: teamId || undefined,
-                // Exclude archived agents (status 'A') unless specifically requested
-                status: includeArchived ? undefined : { not: "A" },
-              },
-            },
-            include: {
-              agent: {
-                select: {
-                  teamId: true,
-                  status: true,
-                  team: {
-                    select: {
-                      name: true,
-                      description: true,
-                    },
-                  },
-                },
-              },
-            },
-          });
-
-          // Get month-by-month trends
-          const monthlyMetrics = new Map();
-
-          metrics.forEach((metric) => {
-            const month = metric.month;
-            if (!monthlyMetrics.has(month)) {
-              monthlyMetrics.set(month, []);
-            }
-            monthlyMetrics.get(month).push(metric);
-          });
-
-          const monthlyTrends = Array.from(monthlyMetrics.entries())
-            .map(([month, monthMetrics]) => {
-              return {
-                month,
-                closeRate:
-                  monthMetrics.reduce((sum, m) => sum + m.closeRate, 0) /
-                  monthMetrics.length,
-                averagePremium: Math.round(
-                  monthMetrics.reduce((sum, m) => sum + m.averagePremium, 0) /
-                    monthMetrics.length
-                ),
-                placeRate:
-                  monthMetrics.reduce((sum, m) => sum + m.placeRate, 0) /
-                  monthMetrics.length,
-                capScore:
-                  monthMetrics.reduce((sum, m) => sum + m.capScore, 0) /
-                  monthMetrics.length,
-                leadsPerDay:
-                  monthMetrics.reduce((sum, m) => sum + m.leadsPerDay, 0) /
-                  monthMetrics.length,
-                count: monthMetrics.length,
-              };
-            })
-            .sort((a, b) => a.month - b.month);
-
-          // Get team performance metrics
-          const teamMetrics = new Map();
-
-          metrics.forEach((metric) => {
-            const teamId = metric.agent.teamId;
-            if (!teamMetrics.has(teamId)) {
-              teamMetrics.set(teamId, {
-                id: teamId,
-                name: metric.agent.team.name,
-                description: metric.agent.team.description,
-                metrics: [],
-              });
-            }
-
-            teamMetrics.get(teamId).metrics.push(metric);
-          });
-
-          const teamPerformance = Array.from(teamMetrics.values()).map(
-            (team) => {
-              const teamData = team.metrics;
-              return {
-                id: team.id,
-                name: team.name,
-                description: team.description,
-                metricsCount: teamData.length,
-                averageCloseRate:
-                  teamData.reduce((sum, m) => sum + m.closeRate, 0) /
-                  teamData.length,
-                averagePremium: Math.round(
-                  teamData.reduce((sum, m) => sum + m.averagePremium, 0) /
-                    teamData.length
-                ),
-                averagePlaceRate:
-                  teamData.reduce((sum, m) => sum + m.placeRate, 0) /
-                  teamData.length,
-                averageCapScore:
-                  teamData.reduce((sum, m) => sum + m.capScore, 0) /
-                  teamData.length,
-                averageLeadsPerDay:
-                  teamData.reduce((sum, m) => sum + m.leadsPerDay, 0) /
-                  teamData.length,
-              };
-            }
-          );
-
-          // Overall summary statistics
-          const summary = {
-            averageCloseRate:
-              metrics.reduce((acc, metric) => acc + metric.closeRate, 0) /
-                metrics.length || 0,
-            averagePremium: Math.round(
-              metrics.reduce((acc, metric) => acc + metric.averagePremium, 0) /
-                metrics.length || 0
-            ),
-            totalMetrics: metrics.length,
-            highestCloseRate: Math.max(...metrics.map((m) => m.closeRate)),
-            highestPremium: Math.round(
-              Math.max(...metrics.map((m) => m.averagePremium))
-            ),
-            avgPlaceRate:
-              metrics.reduce((acc, metric) => acc + metric.placeRate, 0) /
-                metrics.length || 0,
-            avgCapScore:
-              metrics.reduce((acc, metric) => acc + metric.capScore, 0) /
-                metrics.length || 0,
-            avgLeadsPerDay:
-              metrics.reduce((acc, metric) => acc + metric.leadsPerDay, 0) /
-                metrics.length || 0,
-            monthlyTrends,
-            teamPerformance,
-          };
-
-          return summary;
-        },
-        // Cache for 5 minutes
-        5 * 60 * 1000
-      )
-    );
+    // Create a simple metrics summary
+    // First, fetch all metrics data
+    const { data: metricsData, error } = await prisma.supabase
+      .from('metrics')
+      .select(`
+        id, 
+        month, 
+        week, 
+        close_rate, 
+        average_premium, 
+        place_rate, 
+        cap_score, 
+        leads_per_day,
+        agents:agent_id (
+          id,
+          first_name,
+          last_name,
+          team_id,
+          status
+        )
+      `);
+    
+    if (error) {
+      console.error("Error fetching metrics:", error);
+      throw error;
+    }
+    
+    // Filter out archived agents if needed
+    let metrics: MetricData[] = metricsData || [];
+    if (!includeArchived) {
+      metrics = metricsData.filter((m: MetricData) => m.agents?.status !== 'A');
+    }
+    
+    // Filter by team if specified
+    if (teamId) {
+      metrics = metrics.filter((m: MetricData) => m.agents?.team_id === teamId);
+    }
+    
+    // Format metrics to match Prisma format
+    const formattedMetrics: FormattedMetric[] = metrics.map((m: MetricData) => ({
+      id: m.id,
+      month: m.month,
+      week: m.week,
+      closeRate: m.close_rate,
+      averagePremium: m.average_premium,
+      placeRate: m.place_rate,
+      capScore: m.cap_score,
+      leadsPerDay: m.leads_per_day,
+      agent: {
+        id: m.agents?.id,
+        firstName: m.agents?.first_name,
+        lastName: m.agents?.last_name,
+        teamId: m.agents?.team_id,
+        status: m.agents?.status
+      }
+    }));
+    
+    // If no metrics found, return an empty summary
+    if (formattedMetrics.length === 0) {
+      return NextResponse.json({
+        averageCloseRate: 0,
+        averagePremium: 0,
+        totalMetrics: 0,
+        highestCloseRate: 0,
+        highestPremium: 0,
+        avgPlaceRate: 0,
+        avgCapScore: 0,
+        avgLeadsPerDay: 0,
+        monthlyTrends: [],
+        teamPerformance: []
+      });
+    }
+    
+    // Calculate simple summary statistics
+    const summary = {
+      averageCloseRate: 
+        formattedMetrics.reduce((acc: number, metric: FormattedMetric) => acc + metric.closeRate, 0) / 
+        formattedMetrics.length || 0,
+      averagePremium: Math.round(
+        formattedMetrics.reduce((acc: number, metric: FormattedMetric) => acc + metric.averagePremium, 0) / 
+        formattedMetrics.length || 0
+      ),
+      totalMetrics: formattedMetrics.length,
+      highestCloseRate: Math.max(...formattedMetrics.map((m: FormattedMetric) => m.closeRate || 0)),
+      highestPremium: Math.max(...formattedMetrics.map((m: FormattedMetric) => m.averagePremium || 0)),
+      avgPlaceRate: 
+        formattedMetrics.reduce((acc: number, metric: FormattedMetric) => acc + metric.placeRate, 0) / 
+        formattedMetrics.length || 0,
+      avgCapScore:
+        formattedMetrics.reduce((acc: number, metric: FormattedMetric) => acc + metric.capScore, 0) / 
+        formattedMetrics.length || 0,
+      avgLeadsPerDay: 
+        formattedMetrics.reduce((acc: number, metric: FormattedMetric) => acc + metric.leadsPerDay, 0) / 
+        formattedMetrics.length || 0,
+      monthlyTrends: [],
+      teamPerformance: []
+    };
+    
+    // Return the summary
+    return NextResponse.json(summary);
   } catch (error) {
-    logError(error, "metrics_summary");
+    console.error("Error generating metrics summary:", error);
     return NextResponse.json(
-      formatApiError(error, "Failed to fetch metrics summary"),
+      { error: "Failed to fetch metrics summary" },
       { status: 500 }
     );
   }
