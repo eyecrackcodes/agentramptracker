@@ -243,6 +243,7 @@ class SupabaseAdapter {
         metrics: options?.include?.metrics ? data.metrics.map((metric: any) => ({
           id: metric.id,
           agentId: metric.agent_id,
+          year: metric.year,
           month: metric.month,
           week: metric.week,
           closeRate: metric.close_rate,
