@@ -21,7 +21,7 @@ interface TeamDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   team?: TeamWithAgents | null;
-  onSubmit: (name: string, description: string) => Promise<void>;
+  onSubmit: (data: { name: string; description: string }) => Promise<void>;
 }
 
 export function TeamDialog({
@@ -51,7 +51,7 @@ export function TeamDialog({
     setError(null);
 
     try {
-      await onSubmit(name, description);
+      await onSubmit({ name, description });
       onOpenChange(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save team");
