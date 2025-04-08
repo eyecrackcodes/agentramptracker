@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "npm install @radix-ui/react-accordion @radix-ui/react-tabs @radix-ui/react-popover @radix-ui/react-label lucide-react autoprefixer postcss tailwindcss",
-    "build": "npm install && next build",
+    "build": "npm install --production=false && npx autoprefixer --force && next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "npx ts-node prisma/seed.ts",
