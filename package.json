@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm install @radix-ui/react-accordion @radix-ui/react-tabs @radix-ui/react-popover @radix-ui/react-label lucide-react",
     "build": "npm install && next build",
     "start": "next start",
     "lint": "next lint",
