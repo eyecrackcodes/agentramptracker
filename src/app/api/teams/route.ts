@@ -4,35 +4,65 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   console.log("GET /api/teams - Fetching teams");
   try {
-    const teams = await prisma.team.findMany({
-      include: {
-        agents: {
-          include: {
-            call_scores: {
-              orderBy: {
-                call_date: 'desc'
-              },
-              take: 1
-            },
-            coaching_sessions: {
-              orderBy: {
-                session_date: 'desc'
-              },
-              take: 1
-            },
-            development_goals: {
-              where: {
-                status: 'IN_PROGRESS'
-              }
-            }
-          }
-        }
+    // Check for prisma connection first
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      console.log("Database connection test successful");
+    } catch (connError) {
+      console.error("Database connection test failed:", connError);
+      return NextResponse.json(
+        {
+          error: "Database connection failed",
+          details:
+            connError instanceof Error ? connError.message : String(connError),
+        },
+        { status: 500 }
+      );
+    }
+
+    // Try a simpler query first without related models
+    let teams;
+    try {
+      // First attempt with a simpler query - just teams and agents
+      teams = await prisma.team.findMany({
+        include: {
+          agents: true,
+        },
+      });
+      console.log(
+        `GET /api/teams - Successfully fetched ${
+          teams.length
+        } teams with ${teams.reduce(
+          (acc, team) => acc + team.agents.length,
+          0
+        )} agents`
+      );
+    } catch (basicQueryError) {
+      console.error("Error fetching teams with basic query:", basicQueryError);
+      // If even this fails, try fetching just teams without agents
+      try {
+        teams = await prisma.team.findMany();
+        console.log(
+          `GET /api/teams - Fallback: fetched ${teams.length} teams without agents`
+        );
+      } catch (fallbackError) {
+        console.error("Fallback query also failed:", fallbackError);
+        return NextResponse.json(
+          {
+            error: "Failed to fetch teams",
+            details:
+              fallbackError instanceof Error
+                ? fallbackError.message
+                : String(fallbackError),
+          },
+          { status: 500 }
+        );
       }
-    });
-    console.log(`GET /api/teams - Successfully fetched ${teams.length} teams`);
+    }
+
     return NextResponse.json(teams);
   } catch (error) {
-    console.error("Error fetching teams:", error);
+    console.error("Error in teams route:", error);
     // Log more details about the error
     if (error instanceof Error) {
       console.error("Error name:", error.name);
