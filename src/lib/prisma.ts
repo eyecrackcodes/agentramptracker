@@ -132,6 +132,78 @@ class SupabaseAdapter {
         createdAt: data.created_at,
         updatedAt: data.updated_at
       };
+    },
+    
+    update: async (options?: any) => {
+      try {
+        const { data, error } = await this.supabase
+          .from('teams')
+          .update({
+            name: options.data.name,
+            description: options.data.description
+          })
+          .eq('id', options.where.id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        // If we need to include agents, fetch them separately
+        if (options?.include?.agents) {
+          const { data: agents, error: agentError } = await this.supabase
+            .from('agents')
+            .select('id, first_name, last_name, email, start_date')
+            .eq('team_id', data.id);
+          
+          if (agentError) {
+            console.error(`Error fetching agents for team ${data.id}:`, agentError);
+            throw agentError;
+          }
+          
+          return {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at,
+            agents: agents.map((agent: any) => ({
+              id: agent.id,
+              firstName: agent.first_name,
+              lastName: agent.last_name,
+              email: agent.email,
+              startDate: agent.start_date
+            }))
+          };
+        } else {
+          return {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at,
+            agents: []
+          };
+        }
+      } catch (error) {
+        console.error("Error in update team:", error);
+        throw error;
+      }
+    },
+    
+    delete: async (options?: any) => {
+      try {
+        const { error } = await this.supabase
+          .from('teams')
+          .delete()
+          .eq('id', options.where.id);
+        
+        if (error) throw error;
+        
+        return { id: options.where.id };
+      } catch (error) {
+        console.error("Error in delete team:", error);
+        throw error;
+      }
     }
   };
   
