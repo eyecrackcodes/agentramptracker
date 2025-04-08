@@ -210,51 +210,70 @@ class SupabaseAdapter {
   // Agent methods
   agent = {
     findUnique: async (options?: any) => {
-      const { data, error } = await this.supabase
-        .from('agents')
-        .select(options?.include?.team ? 'id, first_name, last_name, email, team_id, start_date, status, tenure, target_leads_per_day, created_at, updated_at, team(*), metrics(*)' : 'id, first_name, last_name, email, team_id, start_date, status, tenure, target_leads_per_day, created_at, updated_at')
-        .eq('id', options?.where?.id)
-        .single();
-      
-      if (error) throw error;
-      
-      if (!data) return null;
-      
-      // Transform to match Prisma format
-      return {
-        id: data.id,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        email: data.email,
-        teamId: data.team_id,
-        startDate: data.start_date,
-        status: data.status,
-        tenure: data.tenure,
-        targetLeadsPerDay: data.target_leads_per_day,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        team: options?.include?.team ? {
-          id: data.team.id,
-          name: data.team.name,
-          description: data.team.description,
-          createdAt: data.team.created_at,
-          updatedAt: data.team.updated_at
-        } : undefined,
-        metrics: options?.include?.metrics ? data.metrics.map((metric: any) => ({
-          id: metric.id,
-          agentId: metric.agent_id,
-          year: metric.year,
-          month: metric.month,
-          week: metric.week,
-          closeRate: metric.close_rate,
-          averagePremium: metric.average_premium,
-          placeRate: metric.place_rate,
-          capScore: metric.cap_score,
-          leadsPerDay: metric.leads_per_day,
-          createdAt: metric.created_at,
-          updatedAt: metric.updated_at
-        })) : []
-      };
+      try {
+        // Build the select string based on what's being included
+        let selectString = 'id, first_name, last_name, email, team_id, start_date, status, tenure, target_leads_per_day, created_at, updated_at';
+        
+        if (options?.include?.team) {
+          selectString += ', team:teams(id, name, description, created_at, updated_at)';
+        }
+        
+        if (options?.include?.metrics) {
+          selectString += ', metrics(*)';
+        }
+
+        const { data, error } = await this.supabase
+          .from('agents')
+          .select(selectString)
+          .eq('id', options?.where?.id)
+          .single();
+        
+        if (error) {
+          console.error("Error in findUnique agent:", error);
+          throw error;
+        }
+        
+        if (!data) return null;
+        
+        // Transform to match Prisma format
+        return {
+          id: data.id,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          email: data.email,
+          teamId: data.team_id,
+          startDate: data.start_date,
+          status: data.status,
+          tenure: data.tenure,
+          targetLeadsPerDay: data.target_leads_per_day,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+          team: options?.include?.team ? {
+            id: data.team.id,
+            name: data.team.name,
+            description: data.team.description,
+            createdAt: data.team.created_at,
+            updatedAt: data.team.updated_at
+          } : undefined,
+          metrics: options?.include?.metrics ? data.metrics.map((metric: any) => ({
+            id: metric.id,
+            agentId: metric.agent_id,
+            year: metric.year,
+            month: metric.month,
+            week: metric.week,
+            closeRate: metric.close_rate,
+            averagePremium: metric.average_premium,
+            placeRate: metric.place_rate,
+            capScore: metric.cap_score,
+            leadsPerDay: metric.leads_per_day,
+            createdAt: metric.created_at,
+            updatedAt: metric.updated_at
+          })) : []
+        };
+      } catch (error) {
+        console.error("Error in findUnique agent:", error);
+        throw error;
+      }
     },
     
     findMany: async (options?: any) => {
