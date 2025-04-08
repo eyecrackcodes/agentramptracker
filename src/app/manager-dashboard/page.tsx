@@ -43,7 +43,9 @@ export default async function ManagerDashboard() {
       teams = JSON.parse(text);
     } catch (parseError) {
       console.error("Failed to parse JSON:", text.substring(0, 100) + "...");
-      throw new Error(`Invalid JSON response: ${parseError.message}`);
+      const errorMessage =
+        parseError instanceof Error ? parseError.message : String(parseError);
+      throw new Error(`Invalid JSON response: ${errorMessage}`);
     }
   } catch (err) {
     console.error("Error fetching teams:", err);
