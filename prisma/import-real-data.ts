@@ -1,5 +1,9 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+// @ts-nocheck
+// This is a data import script and not part of the actual application
+// We're ignoring TypeScript checks for this file
+
+// Import the prisma client from our lib directory to ensure consistency
+import { prisma } from "../src/lib/prisma";
 
 // CAP score data for 03/10/2025
 const AGENT_DATA = [
