@@ -162,11 +162,13 @@ export function MetricsTable({
       } else {
         fetchMetrics();
       }
+
+      setSelectedMetric(null);
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting metric:", error);
     } finally {
       setIsLoading(false);
-      setIsDeleteDialogOpen(false);
     }
   };
 
