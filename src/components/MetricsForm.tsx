@@ -53,8 +53,10 @@ function getWeekNumber(date: Date): number {
 function getMonthsSinceStart(startDate: Date): number {
   const now = new Date();
   const start = new Date(startDate);
-  const months = (now.getFullYear() - start.getFullYear()) * 12 + 
-                (now.getMonth() - start.getMonth()) + 1;
+  const months =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth()) +
+    1;
   return months;
 }
 
@@ -68,7 +70,7 @@ function getCurrentWeekAndMonth(startDate?: string): WeekInfo {
   // Get the current week and month
   const currentWeek = getWeekNumber(now);
   const currentYear = now.getFullYear();
-  
+
   // If we have a start date, calculate tenure month
   let currentTenureMonth: number | undefined;
   let startDateObj: Date | undefined;
@@ -89,11 +91,19 @@ function getCurrentWeekAndMonth(startDate?: string): WeekInfo {
     canSubmit: isAfterFriday,
     weekEnding: weekEnding.toLocaleDateString(),
     startDate: startDateObj,
-    currentTenureMonth
+    currentTenureMonth,
   };
 }
 
-const { year, week, month, canSubmit, weekEnding, startDate, currentTenureMonth } = getCurrentWeekAndMonth();
+const {
+  year,
+  week,
+  month,
+  canSubmit,
+  weekEnding,
+  startDate,
+  currentTenureMonth,
+} = getCurrentWeekAndMonth();
 
 const initialFormData: FormData = {
   year,
@@ -138,7 +148,7 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
     canSubmit,
     weekEnding,
     startDate: undefined,
-    currentTenureMonth: undefined
+    currentTenureMonth: undefined,
   });
 
   const applyPreset = (field: keyof FormData, value: number) => {
@@ -153,9 +163,9 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
     const fetchAgentDetails = async () => {
       try {
         const response = await fetch(`/api/agents/${agentId}`);
-        if (!response.ok) throw new Error('Failed to fetch agent details');
+        if (!response.ok) throw new Error("Failed to fetch agent details");
         const agent = await response.json();
-        
+
         // Update week info with agent's start date
         const newWeekInfo = getCurrentWeekAndMonth(agent.startDate);
         setCurrentWeekInfo({
@@ -165,16 +175,16 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
           canSubmit: newWeekInfo.canSubmit,
           weekEnding: newWeekInfo.weekEnding,
           startDate: newWeekInfo.startDate,
-          currentTenureMonth: newWeekInfo.currentTenureMonth
+          currentTenureMonth: newWeekInfo.currentTenureMonth,
         });
-        
+
         // Update form data with the correct tenure month
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          month: newWeekInfo.currentTenureMonth || 1
+          month: newWeekInfo.currentTenureMonth || 1,
         }));
       } catch (err) {
-        console.error('Error fetching agent details:', err);
+        console.error("Error fetching agent details:", err);
       }
     };
 
@@ -201,14 +211,14 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Round values before submission
-    const roundedData = {
+    // Keep decimal values instead of rounding
+    const formDataWithDecimals = {
       ...formData,
-      closeRate: Math.round(formData.closeRate * 10) / 10,
-      averagePremium: Math.round(formData.averagePremium),
-      placeRate: Math.round(formData.placeRate * 10) / 10,
-      capScore: Math.round(formData.capScore),
-      leadsPerDay: Math.round(formData.leadsPerDay),
+      closeRate: formData.closeRate,
+      averagePremium: formData.averagePremium,
+      placeRate: formData.placeRate,
+      capScore: formData.capScore,
+      leadsPerDay: formData.leadsPerDay,
     };
 
     setIsLoading(true);
@@ -222,10 +232,10 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...roundedData,
+          ...formDataWithDecimals,
           agentId,
-          closeRate: roundedData.closeRate / 100, // Convert percentage to decimal
-          placeRate: roundedData.placeRate / 100, // Convert percentage to decimal
+          closeRate: formDataWithDecimals.closeRate / 100, // Convert percentage to decimal
+          placeRate: formDataWithDecimals.placeRate / 100, // Convert percentage to decimal
         }),
       });
 
@@ -273,9 +283,7 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                         <InfoIcon className="h-4 w-4 ml-1 text-[hsl(var(--muted-foreground))]" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          Enter the year for historical data entry
-                        </p>
+                        <p>Enter the year for historical data entry</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -315,7 +323,8 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
-                          Month number since agent started ({currentWeekInfo.startDate?.toLocaleDateString()})
+                          Month number since agent started (
+                          {currentWeekInfo.startDate?.toLocaleDateString()})
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -407,7 +416,7 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                   type="number"
                   min="0"
                   max="100"
-                  step="1"
+                  step="0.1"
                   value={formData.closeRate}
                   onChange={(e) =>
                     setFormData({
@@ -468,7 +477,7 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                   type="number"
                   min="0"
                   max="100"
-                  step="1"
+                  step="0.1"
                   value={formData.placeRate}
                   onChange={(e) =>
                     setFormData({
@@ -614,7 +623,7 @@ export function MetricsForm({ agentId, onSuccess }: MetricsFormProps) {
                   id="leadsPerDay"
                   type="number"
                   min="0"
-                  step="1"
+                  step="0.1"
                   value={formData.leadsPerDay}
                   onChange={(e) =>
                     setFormData({

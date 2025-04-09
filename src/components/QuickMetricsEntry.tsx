@@ -149,7 +149,9 @@ export function QuickMetricsEntry() {
   return (
     <Card className="mt-4">
       <Title>Quick Metrics Entry</Title>
-      <Text className="mb-4">Add weekly performance metrics for your agents</Text>
+      <Text className="mb-4">
+        Add weekly performance metrics for your agents
+      </Text>
 
       <div className="flex items-center justify-between mb-6 bg-gray-50 p-4 rounded-lg">
         <Button
@@ -185,7 +187,7 @@ export function QuickMetricsEntry() {
             className="w-full rounded-md border border-gray-300 p-2 mt-1"
             value={selectedTeam?.id || ""}
             onChange={(e) => {
-              const team = teams.find(t => t.id === e.target.value);
+              const team = teams.find((t) => t.id === e.target.value);
               setSelectedTeam(team || null);
             }}
             disabled={loadingTeams}
@@ -206,7 +208,7 @@ export function QuickMetricsEntry() {
             className="w-full rounded-md border border-gray-300 p-2 mt-1"
             value={selectedAgent?.id || ""}
             onChange={(e) => {
-              const agent = agents.find(a => a.id === e.target.value);
+              const agent = agents.find((a) => a.id === e.target.value);
               setSelectedAgent(agent || null);
             }}
             disabled={!selectedTeam || loadingAgents}
@@ -291,7 +293,7 @@ export function QuickMetricsEntry() {
               onChange={(e) =>
                 setFormData({ ...formData, leadsPerDay: e.target.value })
               }
-              placeholder="e.g. 8"
+              placeholder="e.g. 8.5"
               className="mt-1"
             />
           </div>
@@ -322,7 +324,8 @@ export function QuickMetricsEntry() {
       {success && (
         <Alert className="mt-4 bg-green-50 border-green-200 text-green-800">
           <AlertDescription>
-            Metrics saved successfully for week {currentWeek} of {format(selectedDate, "MMMM yyyy")}!
+            Metrics saved successfully for week {currentWeek} of{" "}
+            {format(selectedDate, "MMMM yyyy")}!
           </AlertDescription>
         </Alert>
       )}
