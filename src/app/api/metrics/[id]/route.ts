@@ -45,9 +45,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.metric.delete({
-      where: { id: params.id },
-    });
+    // Use direct Supabase method instead of Prisma's delete
+    const { error } = await prisma.supabase
+      .from("metrics")
+      .delete()
+      .eq("id", params.id);
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
