@@ -3,28 +3,40 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Find Doug Curtright
-    const dougAgent = await prisma.agent.findFirst({
+    // Find Doug Curtright using findMany instead of findFirst
+    const dougAgents = await prisma.agent.findMany({
       where: {
         firstName: "Doug",
         lastName: { contains: "Curt" },
       },
+      take: 1, // Limit to one result
     });
 
-    if (!dougAgent) {
-      return NextResponse.json({ error: "Doug Curtright not found" }, { status: 404 });
+    if (!dougAgents || dougAgents.length === 0) {
+      return NextResponse.json(
+        { error: "Doug Curtright not found" },
+        { status: 404 }
+      );
     }
 
-    // Find Frederick Holguin's team
-    const frederickTeam = await prisma.team.findFirst({
+    const dougAgent = dougAgents[0];
+
+    // Find Frederick Holguin's team using findMany instead of findFirst
+    const frederickTeams = await prisma.team.findMany({
       where: {
         name: { contains: "Frederick" },
       },
+      take: 1, // Limit to one result
     });
 
-    if (!frederickTeam) {
-      return NextResponse.json({ error: "Frederick's team not found" }, { status: 404 });
+    if (!frederickTeams || frederickTeams.length === 0) {
+      return NextResponse.json(
+        { error: "Frederick's team not found" },
+        { status: 404 }
+      );
     }
+
+    const frederickTeam = frederickTeams[0];
 
     // Update Doug's team assignment
     const updatedDoug = await prisma.agent.update({
@@ -37,7 +49,7 @@ export async function GET() {
       message: "Doug Curtright's team assignment has been fixed",
       previousTeamId: dougAgent.teamId,
       newTeamId: frederickTeam.id,
-      agent: updatedDoug
+      agent: updatedDoug,
     });
   } catch (error) {
     console.error("Error fixing Doug's team assignment:", error);
@@ -49,4 +61,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-} 
+}
